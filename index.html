@@ -7,27 +7,196 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F5FF;min-height:100vh;padding:20px}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F5FF;min-height:100vh;padding:16px}
     input,select,textarea{font-family:inherit}
-    @keyframes pompom-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-    @keyframes pompom-wave{0%,100%{transform:rotate(0deg)}30%{transform:rotate(-30deg) translateY(-4px)}60%{transform:rotate(20deg) translateY(-2px)}}
-    @keyframes pompom-tap{0%,100%{transform:rotate(0deg)}40%{transform:rotate(40deg) translateY(6px)}70%{transform:rotate(20deg) translateY(3px)}}
-    @keyframes clover-sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(8deg)}}
+    .inp{padding:9px 12px;border-radius:10px;border:1.5px solid #E8E3F8;background:#FDFCFF;color:#2D1B69;font-size:14px;width:100%;outline:none}
+    .inp:focus{border-color:#A78BFA}
+    .sel{padding:8px 10px;border-radius:10px;border:1.5px solid #E8E3F8;background:#FDFCFF;color:#2D1B69;font-size:13px;outline:none}
+    .sel:focus{border-color:#A78BFA}
+    .btn-main{padding:9px 20px;border-radius:12px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:linear-gradient(135deg,#7C3AED,#BE185D);color:#fff;display:inline-flex;align-items:center;gap:6px}
+    .btn-ghost{padding:9px 14px;border-radius:12px;border:1px solid #E8E3F8;cursor:pointer;font-size:13px;background:#F5F3FF;color:#7C6FAF}
+    .btn-danger{padding:9px 14px;border-radius:12px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:5px}
+    .task-card{background:#fff;border:1px solid #E8E3F8;border-radius:12px;padding:11px 14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+    .task-card:hover{border-color:#C4B5FD;box-shadow:0 3px 12px rgba(124,58,237,0.1)}
+    .tab-btn{padding:5px 13px;border-radius:20px;cursor:pointer;font-size:11px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;border:1px solid #E8E3F8;background:#fff;color:#A89EC9}
+    .tab-btn.active{border-color:transparent;font-weight:500;box-shadow:0 2px 8px rgba(124,58,237,0.12)}
+    .chip{font-size:11px;font-weight:500;padding:2px 10px;border-radius:20px;display:inline-block}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes wave{0%,100%{transform:rotate(0)}30%{transform:rotate(-30deg) translateY(-4px)}60%{transform:rotate(20deg) translateY(-2px)}}
+    @keyframes tap{0%,100%{transform:rotate(0)}40%{transform:rotate(40deg) translateY(6px)}70%{transform:rotate(20deg) translateY(3px)}}
+    @keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(8deg)}}
     @keyframes sparkle{0%,100%{opacity:0;transform:scale(0)}50%{opacity:1;transform:scale(1)}}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .float{animation:float 3s ease-in-out infinite}
+    .sway{animation:sway 2.5s ease-in-out infinite;transform-origin:bottom center}
+    .spark{animation:sparkle 2s ease-in-out infinite}
     .spin{animation:spin 1s linear infinite}
-    .pompom-float{animation:pompom-float 3s ease-in-out infinite}
-    .pompom-wave{animation:pompom-wave 0.6s ease-in-out 3}
-    .pompom-tap{animation:pompom-tap 0.5s ease-in-out 3}
-    .clover{animation:clover-sway 2.5s ease-in-out infinite;transform-origin:bottom center}
-    .sparkle{animation:sparkle 2s ease-in-out infinite}
-    .task-card{transition:border-color .15s,box-shadow .15s}
-    .task-card:hover{border-color:#C4B5FD!important;box-shadow:0 3px 12px rgba(124,58,237,0.1)}
-    select option{background:#fff;color:#2D1B69}
+    #modal-overlay{position:fixed;inset:0;background:rgba(109,40,217,0.15);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    #modal-overlay.open{display:flex}
+    #modal-box{background:#fff;border-radius:20px;width:100%;max-width:400px;border:1px solid #E8E3F8;box-shadow:0 24px 64px rgba(124,58,237,0.18);overflow:hidden}
   </style>
 </head>
 <body>
-<div id="app" style="max-width:680px;margin:0 auto"></div>
+
+<!-- Modal (always in DOM, shown/hidden) -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal-box">
+    <div style="background:linear-gradient(135deg,#F5F3FF,#FDF2F8);padding:16px 20px;border-bottom:1px solid #E8E3F8;display:flex;justify-content:space-between;align-items:center">
+      <span id="modal-title" style="font-size:14px;font-weight:500;color:#7C3AED"></span>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#A89EC9"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:11px">
+      <div>
+        <div class="field-label">TITLE</div>
+        <input id="f-title" class="inp" placeholder="What needs to be done?"/>
+      </div>
+      <div>
+        <div class="field-label">CATEGORY</div>
+        <select id="f-cat" class="sel" style="width:100%">
+          <option value="IT">IT & Dev</option>
+          <option value="Finance">Finance</option>
+          <option value="Legal">Legal</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="field-label">PRIORITY</div>
+          <select id="f-priority" class="sel" style="width:100%">
+            <option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label">STATUS</div>
+          <select id="f-status" class="sel" style="width:100%">
+            <option>To Do</option><option>In Progress</option><option>Done</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">NOTES</div>
+        <input id="f-notes" class="inp" placeholder="Add a note…"/>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;margin-top:4px">
+        <div style="display:flex;gap:8px">
+          <button class="btn-main" onclick="saveTask()">Save</button>
+          <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        </div>
+        <button class="btn-danger" id="delete-btn" onclick="deleteCurrentTask()" style="display:none"><i class="ti ti-trash"></i> Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Milestone form modal -->
+<div id="ms-modal" style="position:fixed;inset:0;background:rgba(109,40,217,0.15);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeMsModal()">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:360px;border:1px solid #E8E3F8;box-shadow:0 24px 64px rgba(124,58,237,0.18);overflow:hidden">
+    <div style="background:linear-gradient(135deg,#F5F3FF,#FDF2F8);padding:14px 20px;border-bottom:1px solid #E8E3F8;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:500;color:#7C3AED">New milestone</span>
+      <button onclick="closeMsModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#A89EC9"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+      <div><div class="field-label">NAME</div><input id="ms-label" class="inp" placeholder="Milestone name"/></div>
+      <div><div class="field-label">DATE</div><input id="ms-date" type="date" class="inp"/></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-main" onclick="saveMilestone()">Save</button>
+        <button class="btn-ghost" onclick="closeMsModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detect panel modal -->
+<div id="detect-modal" style="position:fixed;inset:0;background:rgba(109,40,217,0.15);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeDetect()">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;border:1px solid #E8E3F8;box-shadow:0 24px 64px rgba(124,58,237,0.18)">
+    <div style="background:linear-gradient(135deg,#F5F3FF,#FDF2F8);padding:14px 20px;border-bottom:1px solid #E8E3F8;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0">
+      <span style="font-size:14px;font-weight:500;color:#7C3AED"><i class="ti ti-sparkles"></i> AI Detect Tasks</span>
+      <button onclick="closeDetect()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#A89EC9"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:12px;color:#A89EC9">Paste any conversation below — AI will extract actionable tasks for FLEX.</div>
+      <textarea id="paste-area" class="inp" rows="5" placeholder="Paste your conversation here…" style="resize:vertical;line-height:1.6"></textarea>
+      <button class="btn-main" onclick="runDetect()" id="detect-btn">
+        <i class="ti ti-search"></i> Detect tasks
+      </button>
+      <div id="detect-error" style="font-size:12px;color:#BE123C;display:none"></div>
+      <div id="detect-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div style="max-width:680px;margin:0 auto">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:6px;gap:12px">
+    <div style="flex:1">
+      <div style="font-size:22px;font-weight:500;background:linear-gradient(135deg,#7C3AED,#BE185D);-webkit-background-clip:text;-webkit-text-fill-color:transparent">FLEX Tasks</div>
+      <div id="progress-label" style="font-size:12px;color:#A89EC9;margin-top:2px"></div>
+      <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn-ghost" onclick="openDetect()" style="font-size:12px;padding:6px 12px"><i class="ti ti-sparkles"></i> AI detect</button>
+        <button class="btn-main" onclick="openAdd()" style="font-size:12px;padding:6px 14px"><i class="ti ti-plus"></i> Add task</button>
+      </div>
+    </div>
+    <!-- Pompom -->
+    <div id="pompom-wrap" style="position:relative;width:80px;height:90px;flex-shrink:0;cursor:pointer" onclick="wavePompom()">
+      <div class="float" style="position:absolute;bottom:10px;left:0;width:80px">
+        <div class="sway" style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:18px">🍀</div>
+        <div class="spark" style="position:absolute;top:-8px;left:2px;width:6px;height:6px;border-radius:50%;background:#FFF59D"></div>
+        <div class="spark" style="position:absolute;top:2px;left:68px;width:6px;height:6px;border-radius:50%;background:#FFF59D;animation-delay:.4s"></div>
+        <div class="spark" style="position:absolute;top:20px;left:72px;width:6px;height:6px;border-radius:50%;background:#FFF59D;animation-delay:.8s"></div>
+        <div style="position:relative;width:68px;height:62px;margin:0 auto">
+          <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 35% 30%,#B5F08A,#6DBF3A 55%,#4A9A1F)"></div>
+          <div id="arm-left" style="position:absolute;top:28px;left:-10px;width:16px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(ellipse at 40% 30%,#B5F08A,#5AAF2A);transform-origin:top right"></div>
+          <div style="position:absolute;top:30px;right:-10px;width:14px;height:20px;border-radius:50%;background:radial-gradient(ellipse at 40% 30%,#B5F08A,#5AAF2A);transform:rotate(15deg)"></div>
+          <div style="position:absolute;bottom:-10px;left:14px;width:13px;height:16px;border-radius:40% 40% 50% 50%;background:#4A9A1F"></div>
+          <div style="position:absolute;bottom:-10px;right:14px;width:13px;height:16px;border-radius:40% 40% 50% 50%;background:#4A9A1F"></div>
+          <div style="position:absolute;top:18px;left:14px;width:16px;height:16px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:10px;height:10px;border-radius:50%;background:#2D6A0A;display:flex;align-items:center;justify-content:center"><div style="width:4px;height:4px;border-radius:50%;background:#fff;opacity:.7"></div></div></div>
+          <div style="position:absolute;top:18px;left:38px;width:16px;height:16px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:10px;height:10px;border-radius:50%;background:#2D6A0A;display:flex;align-items:center;justify-content:center"><div style="width:4px;height:4px;border-radius:50%;background:#fff;opacity:.7"></div></div></div>
+          <div style="position:absolute;top:38px;left:50%;transform:translateX(-50%);width:18px;height:9px;border-bottom:2.5px solid rgba(30,80,10,0.5);border-radius:0 0 10px 10px"></div>
+        </div>
+        <div style="width:50px;height:8px;background:rgba(0,0,0,0.08);border-radius:50%;margin:4px auto 0;filter:blur(3px)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div style="height:5px;background:#EDE9FE;border-radius:10px;margin-bottom:20px;overflow:hidden">
+    <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#7C3AED,#EC4899);border-radius:10px;transition:width .4s"></div>
+  </div>
+
+  <!-- Milestones -->
+  <div style="background:#fff;border:1px solid #E8E3F8;border-radius:16px;padding:14px 16px;margin-bottom:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:500;color:#A89EC9;letter-spacing:.08em;text-transform:uppercase">Milestones</div>
+      <button onclick="openMsModal()" style="font-size:11px;background:#F5F3FF;border:1px solid #E8E3F8;border-radius:8px;padding:3px 10px;cursor:pointer;color:#7C3AED;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-plus" style="font-size:11px"></i> Add</button>
+    </div>
+    <div id="ms-countdown"></div>
+    <div id="ms-list"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px" id="tab-bar"></div>
+
+  <!-- Filter -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+    <select class="sel" id="status-filter" onchange="setFilter(this.value)">
+      <option value="All">All statuses</option>
+      <option>To Do</option><option>In Progress</option><option>Done</option>
+    </select>
+    <span id="filter-count" style="font-size:11px;color:#A89EC9"></span>
+  </div>
+
+  <!-- Task list -->
+  <div id="task-list"></div>
+
+  <div style="font-size:10px;color:#A89EC9;text-align:center;margin-top:16px">Tap task to edit · Tap circle to cycle status · Click Pompom to say hi 💚</div>
+</div>
+
+<style>
+  .field-label{font-size:10px;color:#7C3AED;font-weight:500;margin-bottom:4px;letter-spacing:.07em}
+</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -41,23 +210,28 @@ const firebaseConfig = {
   messagingSenderId: "615019361037",
   appId: "1:615019361037:web:8b06a059e9aaa4f865b644"
 };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(initializeApp(firebaseConfig));
 
-const CATEGORIES = [
-  {id:"IT",label:"IT & Dev",icon:"ti-code",color:"#6D28D9",bg:"#EDE9FE",border:"#C4B5FD"},
-  {id:"Finance",label:"Finance",icon:"ti-currency-dollar",color:"#9D174D",bg:"#FCE7F3",border:"#F9A8D4"},
-  {id:"Legal",label:"Legal",icon:"ti-gavel",color:"#1E40AF",bg:"#DBEAFE",border:"#93C5FD"},
-  {id:"Marketing",label:"Marketing",icon:"ti-speakerphone",color:"#92400E",bg:"#FEF3C7",border:"#FCD34D"},
-  {id:"Operations",label:"Operations",icon:"ti-settings",color:"#065F46",bg:"#D1FAE5",border:"#6EE7B7"},
-];
-const PRIORITIES=["High","Medium","Low"];
-const STATUSES=["To Do","In Progress","Done"];
-const PRI={High:{color:"#9F1239",bg:"#FFF1F2",dot:"#FB7185"},Medium:{color:"#78350F",bg:"#FFFBEB",dot:"#FBBF24"},Low:{color:"#065F46",bg:"#ECFDF5",dot:"#34D399"}};
-const STA={"To Do":{color:"#4B5563",bg:"#F3F4F6",border:"#D1D5DB"},"In Progress":{color:"#5B21B6",bg:"#EDE9FE",border:"#A78BFA"},Done:{color:"#065F46",bg:"#ECFDF5",border:"#6EE7B7"}};
-const C={bg:"#F7F5FF",card:"#FFFFFF",border:"#E8E3F8",text:"#2D1B69",sub:"#7C6FAF",muted:"#A89EC9",accent:"#7C3AED",pink:"#BE185D"};
+const CATS = {
+  IT:         {label:"IT & Dev",   icon:"ti-code",           color:"#6D28D9",bg:"#EDE9FE",border:"#C4B5FD"},
+  Finance:    {label:"Finance",    icon:"ti-currency-dollar", color:"#9D174D",bg:"#FCE7F3",border:"#F9A8D4"},
+  Legal:      {label:"Legal",      icon:"ti-gavel",           color:"#1E40AF",bg:"#DBEAFE",border:"#93C5FD"},
+  Marketing:  {label:"Marketing",  icon:"ti-speakerphone",    color:"#92400E",bg:"#FEF3C7",border:"#FCD34D"},
+  Operations: {label:"Operations", icon:"ti-settings",        color:"#065F46",bg:"#D1FAE5",border:"#6EE7B7"},
+};
+const PRI = {
+  High:   {color:"#9F1239",bg:"#FFF1F2",dot:"#FB7185"},
+  Medium: {color:"#78350F",bg:"#FFFBEB",dot:"#FBBF24"},
+  Low:    {color:"#065F46",bg:"#ECFDF5",dot:"#34D399"},
+};
+const STA = {
+  "To Do":       {color:"#4B5563",bg:"#F3F4F6",border:"#D1D5DB"},
+  "In Progress": {color:"#5B21B6",bg:"#EDE9FE",border:"#A78BFA"},
+  "Done":        {color:"#065F46",bg:"#ECFDF5",border:"#6EE7B7"},
+};
+const STATUSES = ["To Do","In Progress","Done"];
 
-const DEFAULT_TASKS=[
+const DEFAULT_TASKS = [
   {id:1,cat:"IT",title:"Team Aaron Phase 1 deliverables review",priority:"High",status:"In Progress",notes:"Deadline Jun 19"},
   {id:2,cat:"IT",title:"Team Gi Wai Phase 2 scope alignment",priority:"Medium",status:"To Do",notes:""},
   {id:3,cat:"IT",title:"Nova AI Coach UI — 3 personality modes",priority:"Medium",status:"To Do",notes:""},
@@ -73,208 +247,78 @@ const DEFAULT_TASKS=[
   {id:13,cat:"Operations",title:"5 venue partnerships before Dec launch",priority:"High",status:"To Do",notes:"Target Klang Valley gyms"},
   {id:14,cat:"Operations",title:"Credit & commission structure doc",priority:"High",status:"To Do",notes:"1 credit = RM25; 40–45% commission"},
 ];
-const DEFAULT_MILESTONES=[
+const DEFAULT_MS = [
   {id:1,date:"2026-06-11",label:"Phase 1A Beta Launch",done:true},
   {id:2,date:"2026-06-19",label:"Codebase delineation deadline",done:false},
   {id:3,date:"2026-12-12",label:"Grand Public Launch (Klang Valley)",done:false},
 ];
 
-let state={tasks:DEFAULT_TASKS,milestones:DEFAULT_MILESTONES,activeTab:"All",filterStatus:"All",modal:null,draft:null,showMsForm:false,msForm:{label:"",date:""},showDetect:false,pasteText:"",detecting:false,detected:null,detectError:"",pompomAnim:"idle",loading:true};
+let tasks=[], milestones=[], activeTab="All", filterStatus="All", editingId=null;
 
-// Firebase save/load
-async function saveToFirebase(){
+const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+const daysUntil = d => { const t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); };
+
+async function save(){ try{ await setDoc(doc(db,"tracker","data"),{tasks,milestones,updatedAt:new Date().toISOString()}); }catch(e){console.error(e);} }
+async function load(){
   try{
-    await setDoc(doc(db,"tracker","data"),{tasks:state.tasks,milestones:state.milestones,updatedAt:new Date().toISOString()});
-  }catch(e){console.error("Save error",e);}
-}
-async function loadFromFirebase(){
-  try{
-    const snap=await getDoc(doc(db,"tracker","data"));
-    if(snap.exists()){
-      const d=snap.data();
-      state.tasks=d.tasks||DEFAULT_TASKS;
-      state.milestones=d.milestones||DEFAULT_MILESTONES;
-    }
-  }catch(e){console.error("Load error",e);}
-  state.loading=false;
-  render();
+    const snap = await getDoc(doc(db,"tracker","data"));
+    if(snap.exists()){ const d=snap.data(); tasks=d.tasks||DEFAULT_TASKS; milestones=d.milestones||DEFAULT_MS; }
+    else { tasks=[...DEFAULT_TASKS]; milestones=[...DEFAULT_MS]; }
+  }catch(e){ tasks=[...DEFAULT_TASKS]; milestones=[...DEFAULT_MS]; }
+  renderAll();
 }
 
-const fmtDate=d=>new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
-const daysUntil=d=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/86400000);};
+function renderAll(){ renderProgress(); renderMilestones(); renderTabs(); renderTasks(); }
 
-function setState(updates){Object.assign(state,updates);render();}
-function setAndSave(updates){Object.assign(state,updates);render();saveToFirebase();}
-
-// Pompom animation cycle
-let pompomTimer=null;
-function schedulePompom(){
-  clearTimeout(pompomTimer);
-  const anims=["wave","wave","tap","blink","idle","idle"];
-  const delay=3000+Math.random()*5000;
-  pompomTimer=setTimeout(()=>{
-    const pick=anims[Math.floor(Math.random()*anims.length)];
-    setState({pompomAnim:pick});
-    setTimeout(()=>{setState({pompomAnim:"idle"});schedulePompom();},1800);
-  },delay);
+function renderProgress(){
+  const done=tasks.filter(t=>t.status==="Done").length;
+  const pct=tasks.length?Math.round(done/tasks.length*100):0;
+  document.getElementById("progress-label").textContent=`${done}/${tasks.length} done · ${pct}%`;
+  document.getElementById("progress-bar").style.width=pct+"%";
 }
 
-function pompomHTML(){
-  const a=state.pompomAnim;
-  const isWave=a==="wave",isTap=a==="tap",isBlink=a==="blink";
-  return `
-  <div style="position:relative;width:80px;height:90px;flex-shrink:0;cursor:pointer" onclick="triggerPompom()">
-    <div class="pompom-float" style="position:absolute;bottom:10px;left:0;width:80px">
-      <div class="clover" style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:18px;line-height:1">🍀</div>
-      ${[{t:-8,l:2,d:0},{t:2,l:68,d:0.4},{t:20,l:72,d:0.8},{t:-4,l:40,d:1.2}].map(s=>`<div class="sparkle" style="position:absolute;top:${s.t}px;left:${s.l}px;width:6px;height:6px;border-radius:50%;background:#FFF59D;animation-delay:${s.d}s"></div>`).join("")}
-      <div style="position:relative;width:68px;height:62px;margin:0 auto">
-        <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 35% 30%,#B5F08A,#6DBF3A 55%,#4A9A1F)"></div>
-        <div style="position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(ellipse at 40% 25%,rgba(255,255,255,0.18),transparent 60%);filter:blur(2px)"></div>
-        <div style="position:absolute;top:28px;left:-10px;width:16px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(ellipse at 40% 30%,#B5F08A,#5AAF2A);transform-origin:top right" class="${isWave?"pompom-wave":isTap?"pompom-tap":""}"></div>
-        <div style="position:absolute;top:30px;right:-10px;width:14px;height:20px;border-radius:50%;background:radial-gradient(ellipse at 40% 30%,#B5F08A,#5AAF2A);transform:rotate(15deg)"></div>
-        <div style="position:absolute;bottom:-10px;left:14px;width:13px;height:16px;border-radius:40% 40% 50% 50%;background:#4A9A1F"></div>
-        <div style="position:absolute;bottom:-10px;right:14px;width:13px;height:16px;border-radius:40% 40% 50% 50%;background:#4A9A1F"></div>
-        ${[{l:14},{l:38}].map(e=>`<div style="position:absolute;top:18px;left:${e.l}px;width:16px;height:${isBlink?3:16}px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden"><div style="width:10px;height:10px;border-radius:50%;background:#2D6A0A;display:flex;align-items:center;justify-content:center"><div style="width:4px;height:4px;border-radius:50%;background:#fff;opacity:0.7"></div></div></div>`).join("")}
-        <div style="position:absolute;top:38px;left:50%;transform:translateX(-50%);width:18px;height:9px;border-bottom:2.5px solid rgba(30,80,10,0.5);border-radius:0 0 10px 10px"></div>
-      </div>
-      <div style="width:50px;height:8px;background:rgba(0,0,0,0.08);border-radius:50%;margin:4px auto 0;filter:blur(3px)"></div>
-    </div>
-  </div>`;
-}
+function renderMilestones(){
+  const next=milestones.filter(m=>!m.done).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const cd=document.getElementById("ms-countdown");
+  if(next){
+    const d=daysUntil(next.date);
+    const col=d<=3?"#BE123C":d<=7?"#92400E":"#7C3AED";
+    const bg=d<=3?"#FFF1F2":d<=7?"#FFFBEB":"#F5F3FF";
+    const bdr=d<=3?"#FECDD3":d<=7?"#FCD34D":"#DDD6FE";
+    const txt=d<0?`${Math.abs(d)}d overdue`:d===0?"Today!!":d+" days to go";
+    cd.innerHTML=`<div style="background:${bg};border:1px solid ${bdr};border-radius:10px;padding:7px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px"><i class="ti ti-clock" style="color:${col};font-size:14px"></i><span style="font-size:12px;font-weight:500;color:${col}">${txt}<span style="font-weight:400;color:#A89EC9"> — ${next.label}</span></span></div>`;
+  } else { cd.innerHTML=""; }
 
-window.triggerPompom=function(){
-  clearTimeout(pompomTimer);
-  setState({pompomAnim:"wave"});
-  setTimeout(()=>{setState({pompomAnim:"idle"});schedulePompom();},1800);
-};
-window.cycleStatus=function(id){
-  state.tasks=state.tasks.map(t=>t.id!==id?t:{...t,status:STATUSES[(STATUSES.indexOf(t.status)+1)%STATUSES.length]});
-  setAndSave({});
-};
-window.openView=function(id){
-  const t=state.tasks.find(x=>x.id===id);
-  setState({modal:{mode:"view",task:t},draft:{...t}});
-};
-window.openAdd=function(){
-  setState({modal:{mode:"add"},draft:{cat:state.activeTab!=="All"?state.activeTab:"IT",title:"",priority:"High",status:"To Do",notes:""}});
-};
-window.closeModal=function(){setState({modal:null,draft:null});};
-window.setDraft=function(key,val){setState({draft:{...state.draft,[key]:val}});};
-window.saveTask=function(){
-  if(!state.draft.title.trim())return;
-  if(state.modal.mode==="add"){
-    state.tasks=[...state.tasks,{...state.draft,id:Date.now()}];
-  } else {
-    state.tasks=state.tasks.map(t=>t.id===state.modal.task.id?{...t,...state.draft}:t);
-  }
-  setAndSave({modal:null,draft:null});
-};
-window.deleteTask=function(id){
-  state.tasks=state.tasks.filter(t=>t.id!==id);
-  setAndSave({modal:null,draft:null});
-};
-window.setTab=function(tab){setState({activeTab:tab});};
-window.setFilter=function(val){setState({filterStatus:val});};
-window.toggleMs=function(id){
-  state.milestones=state.milestones.map(m=>m.id===id?{...m,done:!m.done}:m);
-  setAndSave({});
-};
-window.deleteMs=function(id){
-  state.milestones=state.milestones.filter(m=>m.id!==id);
-  setAndSave({});
-};
-window.toggleMsForm=function(){setState({showMsForm:!state.showMsForm});};
-window.setMsForm=function(key,val){setState({msForm:{...state.msForm,[key]:val}});};
-window.addMs=function(){
-  if(!state.msForm.label.trim()||!state.msForm.date)return;
-  state.milestones=[...state.milestones,{id:Date.now(),...state.msForm,done:false}].sort((a,b)=>a.date.localeCompare(b.date));
-  setAndSave({showMsForm:false,msForm:{label:"",date:""}});
-};
-window.toggleDetect=function(){setState({showDetect:!state.showDetect,detected:null,pasteText:""});};
-window.setPasteText=function(val){setState({pasteText:val});};
-window.addDetected=function(i){
-  const item=state.detected[i];
-  state.tasks=[...state.tasks,{...item,id:Date.now()+Math.random(),status:"To Do"}];
-  state.detected=state.detected.filter((_,j)=>j!==i);
-  setAndSave({});
-};
-window.addAllDetected=function(){
-  const n=Date.now();
-  state.tasks=[...state.tasks,...state.detected.map((x,i)=>({...x,id:n+i,status:"To Do"}))];
-  setAndSave({detected:[]});
-};
-window.runDetect=async function(){
-  if(!state.pasteText.trim())return;
-  setState({detecting:true,detected:null,detectError:""});
-  try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:`You are a task extractor for FLEX, an AI fitness app startup in Malaysia. Extract all actionable tasks from the conversation below. Return ONLY a raw JSON array, no markdown:\n[{"title":"...","cat":"IT|Finance|Legal|Marketing|Operations","priority":"High|Medium|Low","notes":"..."}]\nIf nothing actionable, return [].\n\nConversation:\n${state.pasteText}`}]})});
-    const data=await res.json();
-    const raw=data.content?.find(b=>b.type==="text")?.text||"[]";
-    setState({detected:JSON.parse(raw.replace(/```json|```/g,"").trim()),detecting:false});
-  }catch(e){setState({detectError:"Couldn't detect tasks. Try again.",detecting:false});}
-};
-
-function chip(label,s){return `<span style="font-size:11px;font-weight:500;padding:2px 10px;border-radius:20px;background:${s.bg};color:${s.color};border:1px solid ${s.border||"#eee"}">${label}</span>`;}
-function inp(val,onchange,ph=""){return `<input value="${(val||"").replace(/"/g,"&quot;")}" oninput="${onchange}" placeholder="${ph}" style="padding:8px 12px;border-radius:10px;border:1.5px solid ${C.border};background:#FDFCFF;color:${C.text};font-size:13px;width:100%;outline:none"/>`;}
-function sel(val,onchange,opts){return `<select onchange="${onchange}" style="padding:7px 10px;border-radius:10px;border:1.5px solid ${C.border};background:#FDFCFF;color:${C.text};font-size:12px;outline:none;width:100%">${opts.map(o=>`<option value="${o.v||o}" ${(val===o.v||val===o)?"selected":""}>${o.l||o}</option>`).join("")}</select>`;}
-
-function render(){
-  const s=state;
-  if(s.loading){document.getElementById("app").innerHTML=`<div style="text-align:center;padding:3rem;color:${C.muted}"><i class="ti ti-loader-2 spin" style="font-size:32px"></i><div style="margin-top:12px;font-size:14px">Loading your tasks…</div></div>`;return;}
-
-  const visibleCat=s.activeTab==="All"?null:s.activeTab;
-  const filtered=s.tasks.filter(t=>(!visibleCat||t.cat===visibleCat)&&(s.filterStatus==="All"||t.status===s.filterStatus));
-  const doneCnt=s.tasks.filter(t=>t.status==="Done").length;
-  const pct=s.tasks.length?Math.round(doneCnt/s.tasks.length*100):0;
-  const nextMs=s.milestones.filter(m=>!m.done).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  const nextDays=nextMs?daysUntil(nextMs.date):null;
-
-  // Modal
-  let modalHTML="";
-  if(s.modal&&s.draft){
-    const d=s.draft;
-    modalHTML=`
-    <div style="position:fixed;inset:0;background:rgba(109,40,217,0.15);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeModal()">
-      <div style="background:#fff;border-radius:20px;width:100%;max-width:400px;border:1px solid ${C.border};box-shadow:0 24px 64px rgba(124,58,237,0.18);overflow:hidden">
-        <div style="background:linear-gradient(135deg,#F5F3FF,#FDF2F8);padding:16px 20px;border-bottom:1px solid ${C.border};display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:14px;font-weight:500;color:${C.accent}">${s.modal.mode==="add"?"New task":"Edit task"}</span>
-          <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:${C.muted}"><i class="ti ti-x"></i></button>
-        </div>
-        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:11px">
-          <div><div style="font-size:10px;color:${C.accent};font-weight:500;margin-bottom:4px;letter-spacing:.07em">TITLE</div>${inp(d.title,"setDraft('title',this.value)","What needs to be done?")}</div>
-          <div><div style="font-size:10px;color:${C.accent};font-weight:500;margin-bottom:4px;letter-spacing:.07em">CATEGORY</div>${sel(d.cat,"setDraft('cat',this.value)",CATEGORIES.map(c=>({v:c.id,l:c.label})))}</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div><div style="font-size:10px;color:${C.accent};font-weight:500;margin-bottom:4px;letter-spacing:.07em">PRIORITY</div>${sel(d.priority,"setDraft('priority',this.value)",PRIORITIES)}</div>
-            <div><div style="font-size:10px;color:${C.accent};font-weight:500;margin-bottom:4px;letter-spacing:.07em">STATUS</div>${sel(d.status,"setDraft('status',this.value)",STATUSES)}</div>
-          </div>
-          <div><div style="font-size:10px;color:${C.accent};font-weight:500;margin-bottom:4px;letter-spacing:.07em">NOTES</div>${inp(d.notes,"setDraft('notes',this.value)","Add a note…")}</div>
-          <div style="display:flex;gap:8px;justify-content:space-between;margin-top:4px">
-            <div style="display:flex;gap:8px">
-              <button onclick="saveTask()" style="padding:8px 18px;border-radius:12px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:linear-gradient(135deg,${C.accent},${C.pink});color:#fff">Save</button>
-              <button onclick="closeModal()" style="padding:8px 18px;border-radius:12px;border:1px solid ${C.border};cursor:pointer;font-size:13px;background:#F5F3FF;color:${C.sub}">Cancel</button>
-            </div>
-            ${s.modal.mode==="view"?`<button onclick="deleteTask(${s.modal.task.id})" style="padding:8px 14px;border-radius:12px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px"><i class="ti ti-trash"></i> Delete</button>`:""}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  // Milestones
-  const msHTML=s.milestones.map((m,i)=>{
+  document.getElementById("ms-list").innerHTML=milestones.map((m,i)=>{
     const d=daysUntil(m.date);
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:${i<s.milestones.length-1?`1px dashed ${C.border}`:"none"}">
-      <span onclick="toggleMs(${m.id})" style="cursor:pointer;font-size:16px;color:${m.done?C.accent:"#DDD6FE"}"><i class="ti ${m.done?"ti-circle-check-filled":"ti-circle-dashed"}"></i></span>
-      <span style="font-size:11px;color:${C.muted};min-width:88px">${fmtDate(m.date)}</span>
-      <span style="font-size:12px;color:${m.done?C.muted:C.text};text-decoration:${m.done?"line-through":"none"};flex:1">${m.label}</span>
-      ${!m.done?`<span style="font-size:11px;font-weight:500;color:${d<0?"#BE123C":d<=7?"#92400E":C.muted}">${d<0?Math.abs(d)+"d late":d===0?"today":d+"d"}</span>`:""}
-      <span onclick="deleteMs(${m.id})" style="cursor:pointer;color:${C.border};font-size:13px"><i class="ti ti-x"></i></span>
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:${i<milestones.length-1?"1px dashed #E8E3F8":"none"}">
+      <span onclick="toggleMs(${m.id})" style="cursor:pointer;font-size:16px;color:${m.done?"#7C3AED":"#DDD6FE"}"><i class="ti ${m.done?"ti-circle-check-filled":"ti-circle-dashed"}"></i></span>
+      <span style="font-size:11px;color:#A89EC9;min-width:88px">${fmtDate(m.date)}</span>
+      <span style="font-size:12px;flex:1;color:${m.done?"#A89EC9":"#2D1B69"};text-decoration:${m.done?"line-through":"none"}">${m.label}</span>
+      ${!m.done?`<span style="font-size:11px;font-weight:500;color:${d<0?"#BE123C":d<=7?"#92400E":"#A89EC9"}">${d<0?Math.abs(d)+"d late":d===0?"today":d+"d"}</span>`:""}
+      <span onclick="deleteMs(${m.id})" style="cursor:pointer;color:#E8E3F8;font-size:14px"><i class="ti ti-x"></i></span>
     </div>`;
   }).join("");
+}
 
-  // Task list
-  const taskListHTML=(visibleCat?CATEGORIES.filter(c=>c.id===visibleCat):CATEGORIES).map(cat=>{
-    const catTasks=filtered.filter(t=>t.cat===cat.id);
+function renderTabs(){
+  const tabs=["All",...Object.keys(CATS)];
+  document.getElementById("tab-bar").innerHTML=tabs.map(tab=>{
+    const cat=CATS[tab];
+    const active=activeTab===tab;
+    const cnt=tab==="All"?tasks.length:tasks.filter(t=>t.cat===tab).length;
+    return `<button class="tab-btn ${active?"active":""}" onclick="setTab('${tab}')" style="${active?`background:${cat?cat.bg:"linear-gradient(135deg,#7C3AED,#BE185D)"};color:${cat?cat.color:"#fff"};border-color:transparent`:""}">${cat?`<i class="ti ${cat.icon}" style="font-size:11px"></i>`:""}${cat?cat.label:"All"}<span style="font-size:10px;opacity:.6;background:rgba(0,0,0,0.05);border-radius:10px;padding:0 5px">${cnt}</span></button>`;
+  }).join("");
+}
+
+function renderTasks(){
+  const visibleCat=activeTab==="All"?null:activeTab;
+  const filtered=tasks.filter(t=>(!visibleCat||t.cat===visibleCat)&&(filterStatus==="All"||t.status===filterStatus));
+  document.getElementById("filter-count").textContent=filtered.length+" tasks";
+  const catsToShow=visibleCat?[visibleCat]:Object.keys(CATS);
+  document.getElementById("task-list").innerHTML=catsToShow.map(catId=>{
+    const cat=CATS[catId];
+    const catTasks=filtered.filter(t=>t.cat===catId);
     if(!catTasks.length)return "";
     return `<div style="margin-bottom:18px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
@@ -283,128 +327,136 @@ function render(){
         <span style="font-size:10px;color:${cat.color};background:${cat.bg};border-radius:10px;padding:1px 7px;border:1px solid ${cat.border}">${catTasks.length}</span>
       </div>
       ${catTasks.map(t=>`
-        <div class="task-card" onclick="openView(${t.id})" style="background:#fff;border:1px solid ${C.border};border-radius:12px;padding:11px 14px;cursor:pointer;opacity:${t.status==="Done"?0.55:1};margin-bottom:5px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span onclick="event.stopPropagation();cycleStatus(${t.id})" style="font-size:17px;color:${t.status==="Done"?C.accent:t.status==="In Progress"?"#8B5CF6":"#DDD6FE"}"><i class="ti ${t.status==="Done"?"ti-circle-check-filled":t.status==="In Progress"?"ti-circle-half-2":"ti-circle"}"></i></span>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:500;color:${C.text};text-decoration:${t.status==="Done"?"line-through":"none"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</div>
-              <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;align-items:center">
-                <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:${PRI[t.priority].color};background:${PRI[t.priority].bg};padding:1px 7px;border-radius:10px;font-weight:500"><span style="width:5px;height:5px;border-radius:50%;background:${PRI[t.priority].dot};display:inline-block"></span>${t.priority}</span>
-                ${chip(t.status,STA[t.status])}
-                ${t.notes?`<span style="font-size:10px;color:${C.muted}">· ${t.notes}</span>`:""}
-              </div>
+        <div class="task-card" onclick="openEdit(${t.id})" style="opacity:${t.status==="Done"?.55:1};border-left:3px solid ${cat.border}">
+          <span onclick="event.stopPropagation();cycleStatus(${t.id})" style="font-size:18px;color:${t.status==="Done"?"#7C3AED":t.status==="In Progress"?"#8B5CF6":"#DDD6FE"};flex-shrink:0;cursor:pointer"><i class="ti ${t.status==="Done"?"ti-circle-check-filled":t.status==="In Progress"?"ti-circle-half-2":"ti-circle"}"></i></span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500;color:#2D1B69;text-decoration:${t.status==="Done"?"line-through":"none"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</div>
+            <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;align-items:center">
+              <span style="font-size:10px;color:${PRI[t.priority].color};background:${PRI[t.priority].bg};padding:1px 7px;border-radius:10px;font-weight:500;display:inline-flex;align-items:center;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:${PRI[t.priority].dot};display:inline-block"></span>${t.priority}</span>
+              <span class="chip" style="background:${STA[t.status].bg};color:${STA[t.status].color};border:1px solid ${STA[t.status].border}">${t.status}</span>
+              ${t.notes?`<span style="font-size:10px;color:#A89EC9">· ${t.notes}</span>`:""}
             </div>
-            <i class="ti ti-chevron-right" style="font-size:13px;color:${C.border}"></i>
           </div>
+          <i class="ti ti-chevron-right" style="font-size:13px;color:#E8E3F8;flex-shrink:0"></i>
         </div>`).join("")}
     </div>`;
-  }).join("");
-
-  // Detect panel
-  const detectHTML=s.showDetect?`
-  <div style="background:#fff;border:1px solid #DDD6FE;border-radius:16px;padding:16px;margin-bottom:18px">
-    <div style="font-size:13px;font-weight:500;color:${C.accent};margin-bottom:3px"><i class="ti ti-sparkles"></i> Paste conversation to detect tasks</div>
-    <div style="font-size:11px;color:${C.muted};margin-bottom:8px">Copy any chat and paste below — AI will extract actionable tasks.</div>
-    <textarea oninput="setPasteText(this.value)" placeholder="Paste your conversation here…" rows="4" style="padding:8px 12px;border-radius:10px;border:1.5px solid ${C.border};background:#FDFCFF;color:${C.text};font-size:13px;width:100%;outline:none;resize:vertical;line-height:1.6;font-family:inherit">${s.pasteText}</textarea>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button onclick="runDetect()" ${s.detecting||!s.pasteText.trim()?"disabled":""} style="padding:7px 16px;border-radius:12px;border:none;cursor:pointer;font-size:12px;font-weight:500;background:${s.detecting?"#EDE9FE":`linear-gradient(135deg,${C.accent},${C.pink})`};color:${s.detecting?C.muted:"#fff"};display:flex;align-items:center;gap:6px;opacity:${!s.pasteText.trim()?0.5:1}">
-        ${s.detecting?`<i class="ti ti-loader-2 spin"></i> Detecting…`:`<i class="ti ti-search"></i> Detect tasks`}
-      </button>
-      <button onclick="toggleDetect()" style="padding:7px 12px;border-radius:12px;background:#F5F3FF;color:${C.sub};border:1px solid ${C.border};cursor:pointer;font-size:12px">Close</button>
-    </div>
-    ${s.detectError?`<div style="font-size:12px;color:#BE123C;margin-top:8px">${s.detectError}</div>`:""}
-    ${s.detected?s.detected.length===0?`<div style="font-size:12px;color:${C.muted};text-align:center;padding:10px 0">No actionable tasks found.</div>`:`
-    <div style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:12px;color:${C.accent};font-weight:500">${s.detected.length} task${s.detected.length>1?"s":""} detected</div>
-        ${s.detected.length>1?`<button onclick="addAllDetected()" style="padding:4px 12px;border-radius:10px;background:#EDE9FE;color:${C.accent};border:1px solid #DDD6FE;cursor:pointer;font-size:11px">Add all</button>`:""}
-      </div>
-      ${s.detected.map((item,i)=>{const cat=CATEGORIES.find(c=>c.id===item.cat)||CATEGORIES[0];return`
-      <div style="background:#FDFCFF;border:1px solid ${C.border};border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;color:${C.text};margin-bottom:3px">${item.title}</div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            <span style="font-size:10px;color:${cat.color};background:${cat.bg};padding:1px 7px;border-radius:10px;border:1px solid ${cat.border}">${cat.label}</span>
-            <span style="font-size:10px;color:${PRI[item.priority]?.color};background:${PRI[item.priority]?.bg};padding:1px 7px;border-radius:10px">${item.priority}</span>
-            ${item.notes?`<span style="font-size:10px;color:${C.muted}">· ${item.notes}</span>`:""}
-          </div>
-        </div>
-        <button onclick="addDetected(${i})" style="padding:5px 12px;border-radius:10px;background:#EDE9FE;color:${C.accent};border:1px solid #DDD6FE;cursor:pointer;font-size:11px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
-      </div>`;}).join("")}
-    </div>`:""}
-  </div>`:"";
-
-  document.getElementById("app").innerHTML=`
-  ${modalHTML}
-  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:${C.text};background:${C.bg};border-radius:20px;padding:1.5rem">
-
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:6px;gap:12px">
-      <div style="flex:1">
-        <div style="font-size:20px;font-weight:500;background:linear-gradient(135deg,${C.accent},${C.pink});-webkit-background-clip:text;-webkit-text-fill-color:transparent">FLEX Tasks</div>
-        <div style="font-size:12px;color:${C.muted};margin-top:1px">${doneCnt}/${s.tasks.length} done · ${pct}%</div>
-        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-          <button onclick="toggleDetect()" style="padding:6px 12px;border-radius:12px;border:1px solid ${C.border};background:${s.showDetect?"#EDE9FE":"#fff"};color:${C.accent};cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px"><i class="ti ti-sparkles"></i> AI detect</button>
-          <button onclick="openAdd()" style="padding:6px 14px;border-radius:12px;border:none;background:linear-gradient(135deg,${C.accent},${C.pink});color:#fff;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px;box-shadow:0 4px 12px rgba(124,58,237,0.25)"><i class="ti ti-plus"></i> Add task</button>
-        </div>
-      </div>
-      ${pompomHTML()}
-    </div>
-
-    <div style="height:5px;background:#EDE9FE;border-radius:10px;margin-bottom:18px;overflow:hidden">
-      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${C.accent},#EC4899);border-radius:10px;transition:width .4s"></div>
-    </div>
-
-    ${detectHTML}
-
-    <div style="background:#fff;border:1px solid ${C.border};border-radius:16px;padding:12px 16px;margin-bottom:18px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:10px;font-weight:500;color:${C.muted};letter-spacing:.08em;text-transform:uppercase">Milestones</div>
-        <button onclick="toggleMsForm()" style="font-size:11px;background:#F5F3FF;border:1px solid ${C.border};border-radius:8px;padding:3px 10px;cursor:pointer;color:${C.accent};display:flex;align-items:center;gap:3px"><i class="ti ti-plus" style="font-size:11px"></i> Add</button>
-      </div>
-      ${nextMs?`<div style="background:${nextDays<=3?"#FFF1F2":nextDays<=7?"#FFFBEB":"#F5F3FF"};border:1px solid ${nextDays<=3?"#FECDD3":nextDays<=7?"#FCD34D":"#DDD6FE"};border-radius:10px;padding:7px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-        <i class="ti ti-clock" style="font-size:14px;color:${nextDays<=3?"#BE123C":nextDays<=7?"#92400E":C.accent}"></i>
-        <span style="font-size:12px;color:${nextDays<=3?"#BE123C":nextDays<=7?"#92400E":C.accent};font-weight:500">${nextDays<0?Math.abs(nextDays)+"d overdue":nextDays===0?"Today!!":nextDays+" days to go"}<span style="font-weight:400;color:${C.muted}"> — ${nextMs.label}</span></span>
-      </div>`:""}
-      ${s.showMsForm?`<div style="background:#FDFCFF;border:1px solid #DDD6FE;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
-        <input oninput="setMsForm('label',this.value)" placeholder="Milestone name" value="${s.msForm.label}" style="padding:8px 12px;border-radius:10px;border:1.5px solid ${C.border};background:#fff;color:${C.text};font-size:13px;width:100%;outline:none"/>
-        <input type="date" oninput="setMsForm('date',this.value)" value="${s.msForm.date}" style="padding:8px 12px;border-radius:10px;border:1.5px solid ${C.border};background:#fff;color:${C.text};font-size:13px;width:100%;outline:none"/>
-        <div style="display:flex;gap:6px">
-          <button onclick="addMs()" style="padding:6px 16px;border-radius:10px;background:linear-gradient(135deg,${C.accent},${C.pink});color:#fff;border:none;cursor:pointer;font-size:12px">Save</button>
-          <button onclick="toggleMsForm()" style="padding:6px 12px;border-radius:10px;background:#F5F3FF;color:${C.sub};border:1px solid ${C.border};cursor:pointer;font-size:12px">Cancel</button>
-        </div>
-      </div>`:""}
-      ${msHTML}
-    </div>
-
-    <div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px">
-      ${["All",...CATEGORIES.map(c=>c.id)].map(tab=>{
-        const cat=CATEGORIES.find(c=>c.id===tab);
-        const active=s.activeTab===tab;
-        const cnt=tab==="All"?s.tasks.length:s.tasks.filter(t=>t.cat===tab).length;
-        return`<button onclick="setTab('${tab}')" style="padding:5px 13px;border-radius:20px;border:1px solid ${active?"transparent":C.border};background:${active?(cat?cat.bg:`linear-gradient(135deg,${C.accent},${C.pink})`):"#fff"};color:${active?(cat?cat.color:"#fff"):C.muted};cursor:pointer;font-size:11px;font-weight:${active?500:400};white-space:nowrap;display:flex;align-items:center;gap:4px;box-shadow:${active?"0 2px 8px rgba(124,58,237,0.12)":"none"}">
-          ${cat?`<i class="ti ${cat.icon}" style="font-size:11px"></i>`:""}
-          ${tab==="All"?"All":cat?.label}
-          <span style="font-size:10px;opacity:0.6;background:rgba(0,0,0,0.05);border-radius:10px;padding:0 5px">${cnt}</span>
-        </button>`;
-      }).join("")}
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
-      <select onchange="setFilter(this.value)" style="padding:7px 10px;border-radius:10px;border:1.5px solid ${C.border};background:#FDFCFF;color:${C.text};font-size:12px;outline:none">
-        <option value="All" ${s.filterStatus==="All"?"selected":""}>All statuses</option>
-        ${STATUSES.map(st=>`<option value="${st}" ${s.filterStatus===st?"selected":""}>${st}</option>`).join("")}
-      </select>
-      <span style="font-size:11px;color:${C.muted}">${filtered.length} tasks</span>
-    </div>
-
-    ${taskListHTML||`<div style="text-align:center;padding:2rem;color:${C.muted};font-size:13px"><i class="ti ti-clipboard-x" style="font-size:26px;display:block;margin-bottom:8px"></i>Nothing here — add a task!</div>`}
-
-    <div style="font-size:10px;color:${C.muted};text-align:center;margin-top:14px">Tap task to edit · Tap circle to cycle status · Click Pompom to say hi</div>
-  </div>`;
+  }).join("")||`<div style="text-align:center;padding:2rem;color:#A89EC9;font-size:13px"><i class="ti ti-clipboard-x" style="font-size:28px;display:block;margin-bottom:8px"></i>Nothing here — add a task!</div>`;
 }
 
-// Init
-loadFromFirebase();
+// Modal
+window.openAdd=()=>{
+  editingId=null;
+  document.getElementById("modal-title").textContent="New task";
+  document.getElementById("f-title").value="";
+  document.getElementById("f-cat").value=activeTab!=="All"?activeTab:"IT";
+  document.getElementById("f-priority").value="High";
+  document.getElementById("f-status").value="To Do";
+  document.getElementById("f-notes").value="";
+  document.getElementById("delete-btn").style.display="none";
+  document.getElementById("modal-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("f-title").focus(),100);
+};
+window.openEdit=id=>{
+  const t=tasks.find(x=>x.id===id);
+  editingId=id;
+  document.getElementById("modal-title").textContent="Edit task";
+  document.getElementById("f-title").value=t.title;
+  document.getElementById("f-cat").value=t.cat;
+  document.getElementById("f-priority").value=t.priority;
+  document.getElementById("f-status").value=t.status;
+  document.getElementById("f-notes").value=t.notes||"";
+  document.getElementById("delete-btn").style.display="inline-flex";
+  document.getElementById("modal-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("f-title").focus(),100);
+};
+window.closeModal=()=>document.getElementById("modal-overlay").classList.remove("open");
+window.saveTask=()=>{
+  const title=document.getElementById("f-title").value.trim();
+  if(!title)return;
+  const data={title,cat:document.getElementById("f-cat").value,priority:document.getElementById("f-priority").value,status:document.getElementById("f-status").value,notes:document.getElementById("f-notes").value.trim()};
+  if(editingId){ tasks=tasks.map(t=>t.id===editingId?{...t,...data}:t); }
+  else { tasks=[...tasks,{...data,id:Date.now()}]; }
+  closeModal(); save(); renderAll();
+};
+window.deleteCurrentTask=()=>{ tasks=tasks.filter(t=>t.id!==editingId); closeModal(); save(); renderAll(); };
+window.cycleStatus=id=>{ tasks=tasks.map(t=>t.id!==id?t:{...t,status:STATUSES[(STATUSES.indexOf(t.status)+1)%STATUSES.length]}); save(); renderAll(); };
+window.setTab=tab=>{ activeTab=tab; renderTabs(); renderTasks(); };
+window.setFilter=val=>{ filterStatus=val; renderTasks(); };
+
+// Milestones
+window.openMsModal=()=>{ document.getElementById("ms-label").value=""; document.getElementById("ms-date").value=""; document.getElementById("ms-modal").style.display="flex"; setTimeout(()=>document.getElementById("ms-label").focus(),100); };
+window.closeMsModal=()=>document.getElementById("ms-modal").style.display="none";
+window.saveMilestone=()=>{
+  const label=document.getElementById("ms-label").value.trim();
+  const date=document.getElementById("ms-date").value;
+  if(!label||!date)return;
+  milestones=[...milestones,{id:Date.now(),label,date,done:false}].sort((a,b)=>a.date.localeCompare(b.date));
+  closeMsModal(); save(); renderMilestones();
+};
+window.toggleMs=id=>{ milestones=milestones.map(m=>m.id===id?{...m,done:!m.done}:m); save(); renderMilestones(); };
+window.deleteMs=id=>{ milestones=milestones.filter(m=>m.id!==id); save(); renderMilestones(); };
+
+// AI Detect
+window.openDetect=()=>{ document.getElementById("detect-modal").style.display="flex"; document.getElementById("detect-results").innerHTML=""; document.getElementById("detect-error").style.display="none"; };
+window.closeDetect=()=>document.getElementById("detect-modal").style.display="none";
+window.runDetect=async()=>{
+  const text=document.getElementById("paste-area").value.trim();
+  if(!text)return;
+  const btn=document.getElementById("detect-btn");
+  btn.innerHTML='<i class="ti ti-loader-2 spin"></i> Detecting…'; btn.disabled=true;
+  document.getElementById("detect-error").style.display="none";
+  document.getElementById("detect-results").innerHTML="";
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:`You are a task extractor for FLEX, an AI fitness app startup in Malaysia. Extract all actionable tasks from the conversation. Return ONLY a raw JSON array:\n[{"title":"...","cat":"IT|Finance|Legal|Marketing|Operations","priority":"High|Medium|Low","notes":"..."}]\nIf nothing actionable return [].\n\nConversation:\n${text}`}]})});
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==="text")?.text||"[]";
+    const detected=JSON.parse(raw.replace(/```json|```/g,"").trim());
+    if(!detected.length){ document.getElementById("detect-results").innerHTML=`<div style="text-align:center;padding:12px;color:#A89EC9;font-size:12px">No actionable tasks found.</div>`; }
+    else {
+      document.getElementById("detect-results").innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:500;color:#7C3AED">${detected.length} task${detected.length>1?"s":""} detected</span>
+          ${detected.length>1?`<button onclick="addAllDetected()" style="padding:4px 12px;border-radius:10px;background:#EDE9FE;color:#7C3AED;border:1px solid #DDD6FE;cursor:pointer;font-size:11px">Add all</button>`:""}
+        </div>
+        ${detected.map((item,i)=>{const cat=CATS[item.cat]||CATS.IT;return`<div style="background:#FDFCFF;border:1px solid #E8E3F8;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500;color:#2D1B69;margin-bottom:3px">${item.title}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span style="font-size:10px;color:${cat.color};background:${cat.bg};padding:1px 7px;border-radius:10px;border:1px solid ${cat.border}">${cat.label}</span>
+              <span style="font-size:10px;color:${PRI[item.priority]?.color};background:${PRI[item.priority]?.bg};padding:1px 7px;border-radius:10px">${item.priority}</span>
+              ${item.notes?`<span style="font-size:10px;color:#A89EC9">· ${item.notes}</span>`:""}
+            </div>
+          </div>
+          <button onclick="addOneDetected(${i},${JSON.stringify(detected).replace(/"/g,'&quot;')})" style="padding:5px 12px;border-radius:10px;background:#EDE9FE;color:#7C3AED;border:1px solid #DDD6FE;cursor:pointer;font-size:11px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
+        </div>`;}).join("")}`;
+      window._detected=detected;
+    }
+  }catch(e){ const el=document.getElementById("detect-error"); el.textContent="Couldn't detect tasks. Try again."; el.style.display="block"; }
+  btn.innerHTML='<i class="ti ti-search"></i> Detect tasks'; btn.disabled=false;
+};
+window.addOneDetected=i=>{ const item=window._detected[i]; tasks=[...tasks,{...item,id:Date.now()+Math.random(),status:"To Do"}]; save(); renderAll(); };
+window.addAllDetected=()=>{ const n=Date.now(); tasks=[...tasks,...window._detected.map((x,i)=>({...x,id:n+i,status:"To Do"}))]; closeDetect(); save(); renderAll(); };
+
+// Pompom
+let pompomTimer;
+function schedulePompom(){
+  clearTimeout(pompomTimer);
+  const anims=["wave","wave","tap","idle","idle"];
+  pompomTimer=setTimeout(()=>{
+    const pick=anims[Math.floor(Math.random()*anims.length)];
+    const arm=document.getElementById("arm-left");
+    if(arm){arm.style.animation=pick==="wave"?"wave .6s ease-in-out 3":pick==="tap"?"tap .5s ease-in-out 3":"none";}
+    setTimeout(()=>{if(arm)arm.style.animation="none";schedulePompom();},1800);
+  },3000+Math.random()*5000);
+}
+window.wavePompom=()=>{
+  clearTimeout(pompomTimer);
+  const arm=document.getElementById("arm-left");
+  if(arm){arm.style.animation="wave .6s ease-in-out 3";}
+  setTimeout(()=>{if(arm)arm.style.animation="none";schedulePompom();},1800);
+};
+
+load();
 schedulePompom();
 </script>
 </body>
